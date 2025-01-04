@@ -10,6 +10,8 @@ info:
 servers:
   - url: https://api.example.com/v1
     description: Production server
+  - url: http://localhost:8080
+    description: Local server
 
 paths:
   /torrent:
