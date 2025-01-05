@@ -3,6 +3,8 @@ package torrent
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -38,13 +40,13 @@ func (tc *TorrentClient) DownloadMagnet(magnetLink string) error {
 
 // DownloadTorrentToGoogleDrive downloads a torrent and uploads to Google Drive
 func DownloadTorrentToGoogleDrive(magnetLink string, driveToken string) error {
-	// Initialize Google Drive client using the provided token
-	driveService, err := initializeGoogleDriveClient(driveToken)
-	if err != nil {
-		return fmt.Errorf("failed to initialize Google Drive client: %w", err)
-	}
+	// Initialize Google Drive client
+	// driveService, err := initializeGoogleDriveClient(driveToken)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to initialize Google Drive client: %w", err)
+	// }
 
-	// Your torrent client setup code
+	// Torrent client setup
 	clientConfig := torrent.NewDefaultClientConfig()
 	clientConfig.Debug = false
 	client, err := torrent.NewClient(clientConfig)
@@ -53,31 +55,61 @@ func DownloadTorrentToGoogleDrive(magnetLink string, driveToken string) error {
 	}
 	defer client.Close()
 
+	// Add magnet link to the client
 	t, err := client.AddMagnet(magnetLink)
 	if err != nil {
 		return fmt.Errorf("failed to add magnet link: %w", err)
 	}
-	<-t.GotInfo() // Wait for metadata
+	<-t.GotInfo() // Wait for torrent metadata
 
 	// Create folder in Google Drive
-	driveFolder, err := createDriveFolder(driveService, t.Name(), driveToken)
-	if err != nil {
-		return err
-	}
+	// driveFolder, err := createDriveFolder(driveService, t.Name(), driveToken)
+	// if err != nil {
+	// 	return err
+	// }
 
-	// Create temporary directory for torrent downloads
-	tempDir := "temp-torrent-download"
+	// Define tempDir using the Docker volume
+	tempDir := "/root/temp"
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("failed to create temp directory: %w", err)
+		return fmt.Errorf("failed to create temporary directory: %w", err)
 	}
 
-	// Upload files to Google Drive
+	// Download torrent files to temporary directory
 	for _, file := range t.Files() {
-		err = uploadFileToGoogleDrive(driveService, file, tempDir, driveFolder.Id)
+		// Create the file path on disk
+		filePath := filepath.Join(tempDir, file.Path())
+
+		err = os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 		if err != nil {
-			return fmt.Errorf("failed to upload file to Google Drive: %w", err)
+			return fmt.Errorf("failed to create directories for file: %w", err)
 		}
+
+		// Create the file on disk
+		outFile, err := os.Create(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to create file: %w", err)
+		}
+		defer outFile.Close()
+
+		// Download the file
+		reader := file.NewReader()
+		_, err = io.Copy(outFile, reader)
+		if err != nil {
+			return fmt.Errorf("failed to download file: %w", err)
+		}
+	}
+
+	// Upload the downloaded files to Google Drive
+	// for _, file := range t.Files() {
+	// 	// Upload the file to Google Drive
+	// 	err := uploadFileToGoogleDrive(driveService, file, tempDir, driveFolder.Id)
+	// 	if err != nil {
+	// 		return fmt.Errorf("failed to upload file to Google Drive: %w", err)
+	// Temporary directory will be cleaned up by deferred call to os.RemoveAll
+	err = os.RemoveAll(tempDir)
+	if err != nil {
+		log.Printf("Failed to remove temporary directory: %v", err)
 	}
 
 	return nil
@@ -139,46 +171,49 @@ func uploadFileToGoogleDrive(svc *drive.Service, tf *torrent.File, tempDir, fold
 		Parents: []string{folderID},
 	}
 
-	// Upload the file.
-	// Show progress
+	// Create a MediaUpload request
+	uploadRequest := svc.Files.Create(driveFile).Media(file)
+
+	// Upload the file in chunks with progress reporting
 	fileInfo, err := file.Stat()
 	if err != nil {
 		return fmt.Errorf("failed to get file info: %w", err)
 	}
 	fileSize := fileInfo.Size()
-	buffer := make([]byte, 1024*1024) // 1MB buffer
 	var uploaded int64
 
-	for {
-		n, err := file.Read(buffer)
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
-			}
-			return fmt.Errorf("failed to read file: %w", err)
-		}
-
-		_, err = svc.Files.Create(driveFile).Media(file).Do()
-		if err != nil {
-			return fmt.Errorf("failed to upload file to Google Drive: %w", err)
-		}
-
-		uploaded += int64(n)
+	// The media upload will automatically chunk the file if needed
+	progressReader := &ProgressReader{Reader: file, TotalSize: fileSize, ProgressCallback: func(n int64) {
+		uploaded += n
 		progress := float64(uploaded) / float64(fileSize) * 100
 		fmt.Printf("\rUploading file: %s (%.2f%%)", tf.Path(), progress)
-	}
+	}}
 
-	fmt.Println("\nUpload complete.")
+	// Set up the upload request with the progress reader
+	uploadRequest.Media(progressReader)
+
+	// Start the upload
+	_, err = uploadRequest.Do()
 	if err != nil {
 		return fmt.Errorf("failed to upload file to Google Drive: %w", err)
 	}
-	fmt.Printf("Uploaded file: %s\n", tf.Path())
 
-	// Delete the local file after uploading.
-	err = os.Remove(localFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to delete local file: %w", err)
-	}
-
+	// Successful upload
+	fmt.Println("\nUpload complete.")
 	return nil
+}
+
+// ProgressReader provides progress reporting while reading the file
+type ProgressReader struct {
+	Reader           io.Reader
+	TotalSize        int64
+	ProgressCallback func(int64)
+}
+
+func (pr *ProgressReader) Read(p []byte) (n int, err error) {
+	n, err = pr.Reader.Read(p)
+	if err == nil || err == io.EOF {
+		pr.ProgressCallback(int64(n))
+	}
+	return n, err
 }

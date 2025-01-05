@@ -1,20 +1,53 @@
-# Use the official Go image
-FROM golang:1.23
+# Use the official Golang image to build the application
+FROM golang:1.23 AS builder
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+# Set the current working directory inside the container
+WORKDIR /app
 
-# Copy go.mod and go.sum first (to leverage Docker's layer caching for dependencies)
+# Copy the go mod and sum files
 COPY go.mod go.sum ./
 
-# Download and verify module dependencies
-RUN go mod download && go mod verify
+# Copy the .env file
+COPY .env .env
 
-# Copy the rest of the application source code
+# Download the dependencies
+RUN go mod tidy
+
+# Copy the entire project into the container
 COPY . .
 
-# Build the application binary
-RUN go build -v -o /usr/local/bin/app ./...
+# Build the Go app with static linking
+RUN CGO_ENABLED=0 go build -o torrent-downloader-api .
 
-# Command to run the application
-CMD ["app"]
+# Use a debian image for runtime
+FROM debian:bullseye-slim
+
+# Install dependencies for running the app (e.g., ca-certificates and libc)
+RUN apt-get update && apt-get install -y ca-certificates libc6
+
+# Create a non-root user with a specific UID in the range 10000–20000
+RUN useradd --no-create-home --uid 10001 --shell /usr/sbin/nologin appuser
+
+# Set the working directory
+WORKDIR /root/
+
+# Create a volume for the temporary directory
+VOLUME /root/temp
+
+# Copy the Go binary from the build stage
+COPY --from=builder /app/torrent-downloader-api .
+
+# Copy the .env file from the builder stage to the runtime stage
+COPY --from=builder /app/.env .env
+
+# Set ownership for .env and binary files
+RUN chown 10001:10001 /root/.env /root/torrent-downloader-api
+
+# Switch to the non-root user
+USER 10001
+
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Run the application
+CMD ["./torrent-downloader-api"]
