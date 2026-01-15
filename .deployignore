@@ -1,0 +1,5 @@
+torrentDownApi/tmp/
+torrentDownApi/api.log
+torrentDownApi/go.sum
+torrentDownApi/vendor/
+torrentDownApi/.env

@@ -2,3 +2,5 @@ Apis/mainApi/node_modules/*
 types/node_modules/*
 .vscode/*
 Apis/mainApi/.env
+vm-development_key.pem
+deploy.sh
