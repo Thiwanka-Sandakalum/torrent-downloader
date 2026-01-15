@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"torrent-downloader/internal/api"
 	"torrent-downloader/internal/config"
 
@@ -8,18 +9,19 @@ import (
 )
 
 func main() {
-	// Initialize config
+	fmt.Println("Starting main.go")
 	config.InitConfig()
+	fmt.Println("Config loaded")
 
-	// Set Gin to debug mode for development
 	gin.SetMode(gin.DebugMode)
+	fmt.Println("Gin debug mode set")
 
-	// Set up Gin router
 	r := gin.Default()
+	fmt.Println("Gin router initialized")
 
-	// Set up API routes
 	api.SetupRouter(r)
+	fmt.Println("API routes set up")
 
-	// Run the server
+	fmt.Println("Starting server on :8080")
 	r.Run(":8080")
 }

@@ -107,7 +107,7 @@ func DownloadTorrentToGoogleDrive(magnetLink string, driveToken string) error {
 	// 	if err != nil {
 	// 		return fmt.Errorf("failed to upload file to Google Drive: %w", err)
 	// Temporary directory will be cleaned up by deferred call to os.RemoveAll
-	err = os.RemoveAll(tempDir)
+	//	err = os.RemoveAll(tempDir) // Disabled for debugging: do not remove downloaded files
 	if err != nil {
 		log.Printf("Failed to remove temporary directory: %v", err)
 	}
