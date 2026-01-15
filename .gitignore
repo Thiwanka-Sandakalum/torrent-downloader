@@ -1,6 +1,33 @@
-Apis/mainApi/node_modules/*
-types/node_modules/*
-.vscode/*
-Apis/mainApi/.env
+node_modules/
+.vscode/
+.idea/
+.DS_Store
+*.log
+logs/
+.env
+*.env
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+*.local
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Ignore generated files
+client/public/vite.svg
+client/assets/react.svg
+types/genApi_validations.js
+# Ignore Go build files
+backend/torrent-service/go.sum
+# Ignore test outputs (if any)
+backend/main-service/tests/
+# Custom
 vm-development_key.pem
 deploy.sh
