@@ -2,11 +2,11 @@
   "name": "torrent-hunt-api",
   "version": "1.0.0",
   "description": "this api provide api for movies searching | downloading | save to drive",
-  "main": "app.ts",
+  "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/app.js",
-    "dev": "nodemon --exec ts-node app.ts",
+    "start": "node ./dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
     "test": "jest --forceExit"
   },
   "author": "thiwanka",
@@ -19,7 +19,10 @@
     "@types/jest": "^29.5.14",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.1",
+    "@types/pino": "^7.0.4",
+    "@types/redis": "^4.0.10",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
     "supertest": "^7.0.0",
@@ -30,6 +33,7 @@
   "dependencies": {
     "@types/multer": "^1.4.12",
     "auth0": "^4.14.0",
+    "axios": "^1.14.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -45,6 +49,10 @@
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.3",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3",
+    "redis": "^5.11.0",
+    "uuid": "^13.0.0"
   }
 }
