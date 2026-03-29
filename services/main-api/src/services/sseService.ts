@@ -34,7 +34,7 @@ export const streamTaskProgress = async (taskId: string, res: Response): Promise
         res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`);
     }, HEARTBEAT_INTERVAL_MS);
 
-    await subscriber.subscribe(`task:${taskId}:progress`, (message) => {
+    await subscriber.subscribe(`task:${taskId}:progress`, (message: string) => {
         try {
             send(JSON.parse(message));
         } catch {

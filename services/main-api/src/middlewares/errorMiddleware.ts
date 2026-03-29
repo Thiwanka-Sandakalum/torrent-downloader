@@ -33,3 +33,5 @@ export const errorHandler: ErrorRequestHandler = (
     timestamp: new Date().toISOString(),
   });
 };
+
+export const errorMiddleware = errorHandler;

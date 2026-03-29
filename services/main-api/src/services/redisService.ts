@@ -8,7 +8,7 @@ export const connectRedis = async (): Promise<RedisClientType> => {
 
     client = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' }) as RedisClientType;
 
-    client.on('error', (err) => logger.error('Redis client error', err));
+    client.on('error', (err: any) => logger.error('Redis client error', err));
     client.on('connect', () => logger.info('Redis connected'));
 
     await client.connect();

@@ -20,8 +20,10 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.1",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
+    "redis": "^5.11.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
@@ -30,6 +32,7 @@
   "dependencies": {
     "@types/multer": "^1.4.12",
     "auth0": "^4.14.0",
+    "axios": "^1.14.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
