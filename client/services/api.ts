@@ -2,11 +2,26 @@
  * Central Axios instance — all services import from here.
  * Attaches the Auth0 access token to every request automatically.
  */
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 export const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000',
     headers: { 'Content-Type': 'application/json' },
+});
+
+let tokenGetter: (() => Promise<string>) | null = null;
+
+export function setTokenGetter(fn: () => Promise<string>) {
+    tokenGetter = fn;
+}
+
+apiClient.interceptors.request.use(async (config: AxiosRequestConfig) => {
+    if (tokenGetter) {
+        const token = await tokenGetter();
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 /**
