@@ -6,7 +6,6 @@ import {
   cancelTask as cancelTaskAPI,
   subscribeToProgress,
   ProgressEvent,
-  TaskStatus,
 } from '../services/tasks';
 
 export function useTasks() {
@@ -18,9 +17,9 @@ export function useTasks() {
       try {
         const loadedTasks = await listTasks();
         loadedTasks.forEach((task) => {
-          const status: 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed' = 
+          const status: 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed' =
             task.status === 'cancelled' ? 'failed' : task.status as 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed';
-          
+
           setTask({
             id: task.taskId,
             magnetUrl: '',
@@ -50,9 +49,9 @@ export function useTasks() {
       taskId,
       (event: ProgressEvent) => {
         if (event.status && event.progress !== undefined) {
-          const status: 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed' = 
+          const status: 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed' =
             event.status === 'cancelled' ? 'failed' : event.status as 'queued' | 'downloading' | 'uploading' | 'complete' | 'failed';
-          
+
           updateProgress(taskId, {
             status,
             progress: event.progress,

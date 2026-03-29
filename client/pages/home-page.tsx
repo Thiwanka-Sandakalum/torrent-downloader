@@ -106,7 +106,7 @@ function SearchSection({
 }) {
   const { query, results, loading, setQuery, setResults, setLoading } =
     useMovieStore();
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(
     null
   );
 
@@ -131,7 +131,7 @@ function SearchSection({
             overview: movie.overview,
             posterPath: movie.posterUrl.replace(TMDB_IMAGE_BASE, ''),
             voteAverage: movie.rating,
-            releaseDate: new Date(movie.year, 0, 1).toISOString().split('T')[0],
+            releaseDate: `${movie.year}`,
           }));
           setResults(mappedMovies as Movie[]);
         } catch (error) {
@@ -397,7 +397,7 @@ export default function HomePage() {
   };
 
   const handleDownload = async (magnetUrl: string) => {
-    await createTask(magnetUrl, selectedMovie?.id);
+    await createTask(magnetUrl, selectedMovie?.id.toString());
   };
 
   return (
