@@ -1,6 +1,7 @@
 import { ModeToggle } from '@/components/common/theme-toggle';
 import { config } from '@/config';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { AuthTokenProvider } from '@/providers/auth-token-provider';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { PropsWithChildren } from 'react';
 
@@ -17,10 +18,12 @@ export default function Layout({ children }: PropsWithChildren) {
             'openid profile email https://www.googleapis.com/auth/drive.file',
         }}
       >
-        <ThemeProvider defaultTheme="dark" storageKey="theme">
-          <ModeToggle />
-          {children}
-        </ThemeProvider>
+        <AuthTokenProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="theme">
+            <ModeToggle />
+            {children}
+          </ThemeProvider>
+        </AuthTokenProvider>
       </Auth0Provider>
     </main>
   );
