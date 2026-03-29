@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/anacrolix/torrent"
 	"golang.org/x/oauth2"
@@ -60,7 +61,20 @@ func DownloadTorrentToGoogleDrive(magnetLink string, driveToken string) error {
 	if err != nil {
 		return fmt.Errorf("failed to add magnet link: %w", err)
 	}
-	<-t.GotInfo() // Wait for torrent metadata
+
+	// Wait for torrent metadata with timeout
+	gotInfo := make(chan struct{})
+	go func() {
+		t.GotInfo()
+		close(gotInfo)
+	}()
+
+	select {
+	case <-gotInfo:
+		// Metadata received
+	case <-time.After(30 * time.Second):
+		return fmt.Errorf("timeout waiting for torrent metadata")
+	}
 
 	// Create folder in Google Drive
 	// driveFolder, err := createDriveFolder(driveService, t.Name(), driveToken)
