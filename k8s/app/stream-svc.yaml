@@ -1,0 +1,55 @@
+# ─── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-svc
+  namespace: app
+  labels:
+    app: stream-svc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: stream-svc
+  template:
+    metadata:
+      labels:
+        app: stream-svc
+    spec:
+      containers:
+        - name: stream-svc
+          image: torrent-hunt/stream-svc:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - secretRef:
+                name: app-secrets
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+---
+# ─── ClusterIP Service ─────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: stream-svc
+  namespace: app
+spec:
+  type: ClusterIP
+  selector:
+    app: stream-svc
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP

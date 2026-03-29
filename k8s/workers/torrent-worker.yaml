@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: torrent-worker
+  namespace: workers
+  labels:
+    app: torrent-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: torrent-worker
+  template:
+    metadata:
+      labels:
+        app: torrent-worker
+    spec:
+      containers:
+        - name: torrent-worker
+          image: torrent-hunt/torrent-worker:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MAX_CONCURRENT_DOWNLOADS
+              value: "5"
+          envFrom:
+            - secretRef:
+                name: app-secrets
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          volumeMounts:
+            - name: tmp-storage
+              mountPath: /tmp
+      volumes:
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 10Gi

@@ -1,5 +1,4 @@
-import { RouteElement } from '@/components/elements';
-import { wrapRoute } from '@/components/wrappers';
+import { RouteElement, wrapRoute } from '@/components/routing';
 import { RouteConfig } from '@/types';
 import { Route } from 'react-router';
 
