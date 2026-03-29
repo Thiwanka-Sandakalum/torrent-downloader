@@ -4,6 +4,7 @@ import (
 	"context"
 	"drive-worker/internal/models"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -50,7 +51,7 @@ func (c *Client) UpdateTask(ctx context.Context, taskID, status, driveFileID str
 		"$set": bson.M{
 			"status":      status,
 			"driveFileId": driveFileID,
-			"updatedAt":   bson.Now(),
+			"updatedAt":   time.Now(),
 		},
 	}
 	_, err := coll.UpdateOne(ctx, bson.M{"_id": taskID}, update)
@@ -66,7 +67,7 @@ func (c *Client) InsertDownload(ctx context.Context, taskID, userID, driveFileID
 		"taskId":      taskID,
 		"userId":      userID,
 		"driveFileId": driveFileID,
-		"createdAt":   bson.Now(),
+		"createdAt":   time.Now(),
 	}
 	_, err := coll.InsertOne(ctx, doc)
 	if err != nil {

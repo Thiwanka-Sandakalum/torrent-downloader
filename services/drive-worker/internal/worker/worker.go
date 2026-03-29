@@ -120,8 +120,16 @@ func (w *Worker) uploadTask(ctx context.Context, msg models.UploadMessage) error
 		return fmt.Errorf("failed to resolve token: %w", err)
 	}
 
-	// Build Drive service
-	driveService, err := drive.NewService(ctx, option.WithTokenSource(token.Source()))
+	// Build Drive service with token source
+	config := &oauth2.Config{
+		ClientID:     w.cfg.GoogleClientID,
+		ClientSecret: w.cfg.GoogleClientSecret,
+		RedirectURL:  w.cfg.GoogleRedirectURI,
+		Scopes:       []string{drive.DriveScope},
+		Endpoint:     google.Endpoint,
+	}
+	tokenSource := config.TokenSource(ctx, token)
+	driveService, err := drive.NewService(ctx, option.WithTokenSource(tokenSource))
 	if err != nil {
 		return fmt.Errorf("failed to create drive service: %w", err)
 	}
@@ -196,7 +204,7 @@ func (w *Worker) uploadTask(ctx context.Context, msg models.UploadMessage) error
 
 func (w *Worker) uploadFile(ctx context.Context, driveService *drive.Service, storagePath, blobKey, folderID string) (string, error) {
 	// Get file content
-	body, size, err := storage.StreamBlob(ctx, w.cfg.ObjectStorageURL, w.cfg.ObjectStorageBucket, blobKey)
+	body, _, err := storage.StreamBlob(ctx, w.cfg.ObjectStorageURL, w.cfg.ObjectStorageBucket, blobKey)
 	if err != nil {
 		return "", err
 	}
@@ -219,7 +227,7 @@ func (w *Worker) uploadFile(ctx context.Context, driveService *drive.Service, st
 
 	// Upload file
 	file, err := driveService.Files.Create(fileMetadata).
-		Media(body, option.WithContentType(mimeType)).
+		Media(body).
 		Fields("id").
 		Do()
 
