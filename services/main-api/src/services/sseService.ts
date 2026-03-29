@@ -34,7 +34,11 @@ export const streamTaskProgress = async (taskId: string, res: Response): Promise
         res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`);
     }, HEARTBEAT_INTERVAL_MS);
 
+<<<<<<< HEAD
     await subscriber.subscribe(`task:${taskId}:progress`, (message) => {
+=======
+    await subscriber.subscribe(`task:${taskId}:progress`, (message: string) => {
+>>>>>>> copilot-worktree-2026-03-29T13-10-03
         try {
             send(JSON.parse(message));
         } catch {

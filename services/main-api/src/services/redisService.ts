@@ -8,7 +8,11 @@ export const connectRedis = async (): Promise<RedisClientType> => {
 
     client = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' }) as RedisClientType;
 
+<<<<<<< HEAD
     client.on('error', (err) => logger.error('Redis client error', err));
+=======
+    client.on('error', (err: any) => logger.error('Redis client error', err));
+>>>>>>> copilot-worktree-2026-03-29T13-10-03
     client.on('connect', () => logger.info('Redis connected'));
 
     await client.connect();

@@ -32,4 +32,10 @@ export const errorHandler: ErrorRequestHandler = (
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
     timestamp: new Date().toISOString(),
   });
+<<<<<<< HEAD
 };
+=======
+};
+
+export const errorMiddleware = errorHandler;
+>>>>>>> copilot-worktree-2026-03-29T13-10-03
