@@ -36,4 +36,4 @@ yarn.lock
 public/vite.svg
 assets/react.svg
 # Ignore test outputs (if any)
-# Add more patterns as needed
+# Add more patterns as needed.env.local
