@@ -37,31 +37,9 @@ Torrent Hunt lets users search for movies, initiate torrent downloads via magnet
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     Kubernetes Cluster                           │
-│                                                                  │
-│  ┌─ namespace: ingress ──────────────────────────────────────┐  │
-│  │  Nginx Ingress Controller  (SSL · CORS · Rate Limit)      │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│           │ /api/*                    │ /api/stream/*            │
-│  ┌─ namespace: app ──────────────────────────────────────────┐  │
-│  │  main-api (Node.js · ×2)     stream-svc (Go · ×2)        │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│           │ Redis Streams                                        │
-│  ┌─ namespace: workers ──────────────────────────────────────┐  │
-│  │  torrent-worker (Go · ×1–3)  drive-worker (Go · ×1)      │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│  ┌─ namespace: data ─────────────────────────────────────────┐  │
-│  │  redis StatefulSet (5Gi PVC)  mongodb StatefulSet (20Gi)  │  │
-│  └───────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
-         │                                        │
-  Azure Blob Storage                        External APIs
-  /downloads/{taskId}/                   Auth0 · TMDB · Google
-```
+![alt text](Docs/diagram.png)
 
-A full Mermaid diagram, sequence flows, and all service use cases are documented in [ARCHITECTURE.md](./ARCHITECTURE.md).
+A full Mermaid diagram, sequence flows, and all service use cases are documented in [ARCHITECTURE.md](./Docs/ARCHITECTURE.md).
 
 ---
 
